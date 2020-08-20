@@ -2,10 +2,10 @@
 #include <math.h>
 #include "DEAL.h"
 
-#define INTEREST		.03110
+#define INTEREST	.03110
 #define COMPOUND_RATE	12
-#define PAY_RATE		12
-#define LOAN_LENGTH		30 * 12
+#define PAY_RATE	12
+#define LOAN_LENGTH	30 * 12
 
 double Payment(double principle, double interest, int period)
 {
