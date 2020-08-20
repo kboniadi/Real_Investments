@@ -9,21 +9,21 @@
 
 double Payment(double principle, double interest, int period)
 {
-    double denominator;
-    double numerator;
+	double denominator;
+	double numerator;
 
-    numerator = interest * pow((1 + interest), period);
-    denominator = pow((1 + interest), period) - 1;
+	numerator = interest * pow((1 + interest), period);
+	denominator = pow((1 + interest), period) - 1;
 
-    return principle * (numerator / denominator);
+	return principle * (numerator / denominator);
 }
 
 double rate(double interest, int CompNum, int payNum)
 {
-    double power = (double) CompNum / payNum;
-    double helper = interest / CompNum;
+	double power = (double) CompNum / payNum;
+	double helper = interest / CompNum;
 
-    return pow(1 + helper, power) - 1;
+	return pow(1 + helper, power) - 1;
 }
 
 void print(double home,  double down)
@@ -33,32 +33,40 @@ void print(double home,  double down)
 	double principal_count = 0;
 	double interest_count = 0;
 	double balance = home - down;
-    double amount = Payment(balance, rate(INTEREST, COMPOUND_RATE, PAY_RATE),
-							 			  LOAN_LENGTH);
+	double amount = Payment(balance,
+		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
 
-    printf("%-10s %-10s %-10s %-10s %-10s\n", "Payment", "Amount", "Interest",
-		   "Principal", "Balance");
-    printf("%-10s %-10s %-10s %-10s %-10.2lf\n", "", "", "", "", balance);
+	printf("%-10s %-10s %-10s %-10s %-10s\n", "Payment", "Amount",\
+		"Interest", "Principal", "Balance");
+	printf("%-10s %-10s %-10s %-10s %-10.2lf\n", "", "", "", "", balance);
 
-    while (round(balance) > 0) {
+	while (round(balance) > 0) {
 		amount_count += amount;
-		principal_count += amount - (balance * rate(INTEREST, COMPOUND_RATE,
-													PAY_RATE));
-		interest_count += balance * rate(INTEREST, COMPOUND_RATE, PAY_RATE);
+		principal_count += amount - (balance * rate(INTEREST,
+			COMPOUND_RATE, PAY_RATE));
+
+		interest_count += balance * rate(INTEREST, COMPOUND_RATE,
+			PAY_RATE);
+
 		printf("%-10i %-10.2lf %-10.2lf %-10.2lf %-10.2lf\n",
-			   i,
-			   amount,
-			   balance * rate(INTEREST, COMPOUND_RATE, PAY_RATE),
-			   amount - (balance * rate(INTEREST, COMPOUND_RATE, PAY_RATE)),
-			   balance - (amount - (balance * rate(INTEREST, COMPOUND_RATE,
-												   PAY_RATE))));
+			i, amount, balance * rate(INTEREST, COMPOUND_RATE,
+			PAY_RATE), amount - (balance * rate(INTEREST,
+			COMPOUND_RATE, PAY_RATE)), balance - (amount -
+			(balance * rate(INTEREST, COMPOUND_RATE, PAY_RATE))));
+
 		balance -= (amount - (balance * rate(INTEREST, COMPOUND_RATE,
-											 PAY_RATE)));
+			PAY_RATE)));
+
 		if (i % 12 == 0) {
-			printf("-------------------------------------------------------\n");
-			printf("%-10s %-10.2lf %-10.2lf %-10.2lf %-10.2lf\n", "total",
-				   amount_count, interest_count, principal_count, balance);
-			printf("-------------------------------------------------------\n");
+			printf("---------------------------------------------\
+				----------\n");
+
+			printf("%-10s %-10.2lf %-10.2lf %-10.2lf %-10.2lf\n",
+				"total", amount_count, interest_count,
+				principal_count, balance);
+
+			printf("-----------------------------------------------\
+				--------\n");
 		}
 		i++;
 	}
@@ -67,8 +75,8 @@ void print(double home,  double down)
 
 int main()
 {
-    double home = 0;
-    double down = 0;
+	double home = 0;
+	double down = 0;
 
 	DEAL deal;
 
@@ -85,10 +93,10 @@ int main()
 	scanf("%d", &deal.monthly_rent);
 
 	printf("Enter your home price: ");
-    scanf("%lf", &home);
-    printf("Enter down payment: ");
-    scanf("%lf", &down);
+	scanf("%lf", &home);
+	printf("Enter down payment: ");
+	scanf("%lf", &down);
 
-    print(home, down);
-    return 0;
+	print(home, down);
+	return 0;
 }
