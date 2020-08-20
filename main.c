@@ -1,4 +1,6 @@
-
+#include <stdio.h>
+#include <math.h>
+#include "DEAL.h"
 
 /*
 
@@ -6,22 +8,21 @@
 
 */
 
-#include <stdio.h>
-#include <math.h>
-
 int main()
 {
-    double base, power, result;
+	DEAL deal;
 
-    printf("Enter the base number: ");
-    scanf("%lf", &base);
+	printf("Asking Price:");
+	scanf("%d", &deal.asking_price);
 
-    printf("Enter the power raised: ");
-    scanf("%lf",&power);
+	printf("Market Price:");
+	scanf("%d", &deal.market_price);
 
-    result = pow(base,power);
+	printf("HOA:");
+	scanf("%d", &deal.hoa);
 
-    printf("%.1lf^%.1lf = %.2lf", base, power, result);
+	printf("Monthly Rent:");
+	scanf("%d", &deal.monthly_rent);
 
-    return 0;
+	return 0;
 }
