@@ -2,12 +2,78 @@
 #include "DEAL.h"
 #include "TOOLS.h"
 #include "LIMITS.h"
+#include "operators.h"
 
 /*
 we have to eventually calculate holding costs...
 we should also calculate IRR
 it's Principal not principle
 */
+
+//double Payment(double principle, double interest, int period)
+//{
+//	double denominator;
+//	double numerator;
+//
+//	numerator = interest * pow((1 + interest), period);
+//	denominator = pow((1 + interest), period) - 1;
+//
+//	return principle * (numerator / denominator);
+//}
+//
+//double rate(double interest, int CompNum, int payNum)
+//{
+//	double power = (double) CompNum / payNum;
+//	double helper = interest / CompNum;
+//
+//	return pow(1 + helper, power) - 1;
+//}
+//
+//void print(double home,  double down)
+//{
+//	int i = 1;
+//	double amount_count = 0;
+//	double principal_count = 0;
+//	double interest_count = 0;
+//	double balance = home - down;
+//	double amount = Payment(balance,
+//		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH * 12);
+//
+//	printf("%-10s %-10s %-10s %-10s %-10s\n", "Payment", "Amount",\
+//		"Interest", "Principal", "Balance");
+//	printf("%-10s %-10s %-10s %-10s %-10.2lf\n", "", "", "", "", balance);
+//
+//	while (round(balance) > 0) {
+//		amount_count += amount;
+//		principal_count += amount - (balance * rate(INTEREST,
+//			COMPOUND_RATE, PAY_RATE));
+//
+//		interest_count += balance * rate(INTEREST, COMPOUND_RATE,
+//			PAY_RATE);
+//
+//		printf("%-10i %-10.2lf %-10.2lf %-10.2lf %-10.2lf\n",
+//			i, amount, balance * rate(INTEREST, COMPOUND_RATE,
+//			PAY_RATE), amount - (balance * rate(INTEREST,
+//			COMPOUND_RATE, PAY_RATE)), balance - (amount -
+//			(balance * rate(INTEREST, COMPOUND_RATE, PAY_RATE))));
+//
+//		balance -= (amount - (balance * rate(INTEREST, COMPOUND_RATE,
+//			PAY_RATE)));
+//
+//		if (i % 12 == 0) {
+//			printf("---------------------------------------------"
+//		  "----------\n");
+//
+//			printf("%-10s %-10.2lf %-10.2lf %-10.2lf %-10.2lf\n",
+//				"total", amount_count, interest_count,
+//				principal_count, balance);
+//
+//			printf("-----------------------------------------------"
+//				"--------\n");
+//		}
+//		i++;
+//	}
+//}
 
 int main()
 {
@@ -17,6 +83,26 @@ int main()
 
 	calculate_deal(&deal);
 
+	struct Operator *op = CreateOperator();
+	double home = 0;
+	double down = 0;
+
+	FloatType left;
+	FloatType right;
+	FloatType newNum;
+
+	ConvertToFloatType(&left, 123.4523);
+	ConvertToFloatType(&right, 554.12);
+
+	op->divi(&left, &right, &newNum);
+	printf("%i, %i, %i\n", (int) left.scale, (int) right.scale, (int) newNum.scale);
+//	printf("%i, %i, %i\n", (int) left.precision, (int) right.precision, (int) newNum.precision);
+	printf("%i, %i, %lld\n", (int) left.scaledNum, (int) right.scaledNum, (long long) newNum.scaledNum);
+	printf("%lf, %lf, %lf\n", ConvertToDouble(&left), ConvertToDouble(&right), ConvertToDouble(&newNum));
+
+	printf("%lf\n", ConvertToDouble(&left));
+	op->absolute(&left);
+	printf("%lf", ConvertToDouble(&left));
 
 	/*
 	DEAL deal;

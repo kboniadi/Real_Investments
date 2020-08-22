@@ -6,8 +6,13 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fs
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
 
-add_executable(real_investments main.c
-                                DEAL.c
-                                DEAL.h)
+add_executable(real_investments
+        main.c
+        DEAL.c
+        DEAL.h
+        operators.c
+        operators.h
+        TOOLS.c
+        TOOLS.h)
 
 target_link_libraries(real_investments m)
