@@ -1,6 +1,8 @@
 #include "DEAL.h"
 
 void init_deal(DEAL *deal) {
+	double max_debt;
+
 	printf("Asking Price:");
 	scanf("%lf", &deal->asking_price);
 
@@ -17,17 +19,8 @@ void init_deal(DEAL *deal) {
 	deal->down_payment = 0;
 	deal->rehab_cost = 0;
 	deal->mortgage = 0;
-	deal->taxes = 0;
-	deal->insurance = 0;
-	deal->capex = 0;
-	deal->repairs = 0;
-	deal->vacancy = 0;
-	deal->management = 0;
-}
 
-void calculate_deal(DEAL *deal) {
-	double max_debt;
-
+	//filling some default values in
 	deal->capex = MONTHLY_CAPEX * deal->monthly_rent;
 	deal->vacancy = MONTHLY_VACANCY * deal->monthly_rent;
 	deal->management = MONTHLY_MANAGEMENT * deal->monthly_rent;
@@ -48,29 +41,16 @@ void calculate_deal(DEAL *deal) {
 
 	deal->rehab_cost = ((deal->market_price - max_debt) -
 		deal->down_payment) / 2.0;
+}
 
+void calculate_deal(DEAL *deal) {
 
-	//asking price--
-	//market price--
-	//purchase price
-	//down payment
-	//money into the deal
-		//rehab cost + 6 month holding cost
-	//monthly costs
-		//mortgage
-		//taxes
-		//insurance
-		//HOA--
-		//CAPEX
-		//repairs
-		//vacancy
-		//management
-	//rent--
-	//cashflow
-	//coc return
-
-
-
+	/*
+	caprate
+	noi
+	Cashflow
+	cash on cas
+	*/
 
 	//cashflow, coc return, projected roi
 

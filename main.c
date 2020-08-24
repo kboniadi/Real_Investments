@@ -83,6 +83,7 @@ int main()
 
 	calculate_deal(&deal);
 
+	/*
 	struct Operator *op = CreateOperator();
 	double home = 0;
 	double down = 0;
@@ -103,6 +104,7 @@ int main()
 	printf("%lf\n", ConvertToDouble(&left));
 	op->absolute(&left);
 	printf("%lf", ConvertToDouble(&left));
+	*/
 
 	/*
 	DEAL deal;
