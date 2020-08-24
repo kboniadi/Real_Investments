@@ -31,6 +31,11 @@ double rate(double interest, int CompNum, int payNum)
 	return pow(1 + helper, power) - 1;
 }
 
+double compund_interest(double principle, double rate, int time)
+{
+	return principle * pow(1 + rate, time);
+}
+
 void print(double home,  double down)
 {
 	int i = 1;
@@ -79,14 +84,15 @@ void print(double home,  double down)
 	}
 }
 
-int calc_year_one_amortization(double balance)
+int calc_annual_amortization(double balance, int months_paid)
 {
 	int i = 1;
 	double amount_count = 0;
 	double principal_count = 0;
 	double interest_count = 0;
 	double amount = payment(balance,
-		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
+		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH -
+		months_paid);
 
 	for (int i = 0; i < 12; i++) {
 		principal_count += amount - (balance * rate(INTEREST,
@@ -101,22 +107,28 @@ int calc_year_one_amortization(double balance)
 void print_chart(char **header, char **sidebar, char ***data, int width,
 	int height, int column_width) {
 
-	char printf_spacer[10]; //i don't know 10 seems like a good number
+	char text_spacer[10]; //i don't know 10 seems like a good number
+	char data_spacer[10]; //i don't know 10 seems like a good number
 	int height_index = 0;
 
-	strcpy(printf_spacer, "");
-	strcat(printf_spacer, "%-");
-	strcat(printf_spacer, itoa(column_width));
-	strcat(printf_spacer, "s");
+	strcpy(data_spacer, "");
+	strcat(data_spacer, "%");
+	strcat(data_spacer, itoa(column_width, (char[50]){}, 50));
+	strcat(data_spacer, "s");
+
+	strcpy(text_spacer, "");
+	strcat(text_spacer, "%-");
+	strcat(text_spacer, itoa(column_width, (char[50]){}, 50));
+	strcat(text_spacer, "s");
 
 	draw_line(((width + 1) * (column_width + 1)) + 1);
 
 	printf("|");
-	printf(printf_spacer, "");
+	printf(text_spacer, "");
 	printf("|");
 
 	for (int i = 0; i < width; i++) {
-		printf(printf_spacer, header[i]);
+		printf(text_spacer, header[i]);
 		printf("|");
 	}
 	printf("\n");
@@ -126,11 +138,11 @@ void print_chart(char **header, char **sidebar, char ***data, int width,
 	while (height_index < height) {
 		printf("|");
 
-		printf(printf_spacer, sidebar[height_index]);
+		printf(text_spacer, sidebar[height_index]);
 		printf("|");
 
 		for (int i = 0; i < width; i++) {
-			printf(printf_spacer, data[height_index][i]);
+			printf(data_spacer, data[i][height_index]);
 			printf("|");
 		}
 
@@ -147,21 +159,27 @@ void print_chart_single(char *header, char **sidebar, char **data, int height,
 	int column_width) {
 
 	int width = 1;
-	char printf_spacer[10]; //i don't know 10 seems like a good number
+	char text_spacer[10]; //i don't know 10 seems like a good number
+	char data_spacer[10]; //i don't know 10 seems like a good number
 	int height_index = 0;
 
-	strcpy(printf_spacer, "");
-	strcat(printf_spacer, "%-");
-	strcat(printf_spacer, itoa(column_width));
-	strcat(printf_spacer, "s");
+	strcpy(data_spacer, "");
+	strcat(data_spacer, "%");
+	strcat(data_spacer, itoa(column_width, (char[50]){}, 50));
+	strcat(data_spacer, "s");
+
+	strcpy(text_spacer, "");
+	strcat(text_spacer, "%-");
+	strcat(text_spacer, itoa(column_width, (char[50]){}, 50));
+	strcat(text_spacer, "s");
 
 	draw_line(((width + 1) * (column_width + 1)) + 1);
 
 	printf("|");
-	printf(printf_spacer, "");
+	printf(text_spacer, "");
 	printf("|");
 
-	printf(printf_spacer, header);
+	printf(text_spacer, header);
 	printf("|");
 	printf("\n");
 
@@ -170,17 +188,16 @@ void print_chart_single(char *header, char **sidebar, char **data, int height,
 	while (height_index < height) {
 		printf("|");
 
-		printf(printf_spacer, sidebar[height_index]);
+		printf(text_spacer, sidebar[height_index]);
 		printf("|");
 
-		printf(printf_spacer, data[height_index]);
+		printf(data_spacer, data[height_index]);
 		printf("|");
 
 		printf("\n");
 
 		height_index++;
 	}
-
 
 	draw_line(((width + 1) * (column_width + 1)) + 1);
 }
@@ -191,28 +208,26 @@ void draw_line(int width) {
 	printf("\n");
 }
 
-char* itoa(int val) {
-
-	static char buf[32] = {0};
-
-	int i = 30;
-
-	for(; val && i ; --i, val /= 10)
-
-		buf[i] = "0123456789abcdef"[val % 10];
-
-	return &buf[i+1];
-
+char* itoa(int val, char *out, int size) {
+	snprintf(out, size, "%d", val);
+	return out;
 }
 
 char* ftoa(double input, char *out, int size) {
 	//for now two decimal places. Should be changed later
-	//for the love of god put in some commas
-	snprintf(out, size, "%.2lf", input);
+
+	setlocale(LC_NUMERIC, "");
+	snprintf(out, size, "%'.2lf", input);
 	return out;
 }
-/*IRR, ignore for now
-#define LOW_RATE 0.01
+
+char* ftoa_p(double input, char *out, int size) {
+	//for now two decimal places. Should be changed later
+	snprintf(out, size, "%.2lf%%", input);
+	return out;
+}
+
+#define LOW_RATE -0.5
 #define HIGH_RATE 0.5
 #define MAX_ITERATION 1000
 #define PRECISION_REQ 0.00000001
@@ -238,7 +253,7 @@ double computeIRR(double cf[], int numOfFlows)
             npv = npv + (cf[j]/denom);
         }
 
-        /* Stop checking once the required precision is achieved *//*
+        /* Stop checking once the required precision is achieved */
         if ((npv > 0) && (npv < PRECISION_REQ))
             break;
         if (old == 0)
@@ -269,5 +284,3 @@ double computeIRR(double cf[], int numOfFlows)
         }
         return guessRate;
     }
-
-*/

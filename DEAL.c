@@ -25,6 +25,8 @@ void init_deal(DEAL *deal) {
 	deal->vacancy = MONTHLY_VACANCY * deal->monthly_rent;
 	deal->management = MONTHLY_MANAGEMENT * deal->monthly_rent;
 	deal->repairs = MONTHLY_REPAIRS * deal->monthly_rent;
+	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
+	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
 
 	deal->mortgage = deal->monthly_rent - (deal->capex + deal->vacancy +
 		deal->management + deal->repairs + deal->taxes +
@@ -40,12 +42,71 @@ void init_deal(DEAL *deal) {
 	deal->rehab_cost = (deal->market_price - deal->purchase_price) / 2.0;
 }
 
+void modify_values(DEAL *deal) {
+	int input;
+
+	while (1) {
+		printf("\nWhich would you like to modify? :");
+		scanf("%d", &input);
+
+		printf("\nPlease input new value:");
+		switch(input) {
+		case 1:
+			scanf("%lf", &deal->asking_price);
+			break;
+		case 2:
+			scanf("%lf", &deal->market_price);
+			break;
+		case 3:
+			scanf("%lf", &deal->purchase_price);
+			break;
+		case 4:
+			scanf("%lf", &deal->down_payment);
+			break;
+		case 5:
+			scanf("%lf", &deal->rehab_cost);
+			break;
+		case 6:
+			scanf("%lf", &deal->taxes);
+			break;
+		case 7:
+			scanf("%lf", &deal->insurance);
+			break;
+		case 8:
+			scanf("%lf", &deal->hoa);
+			break;
+		case 9:
+			scanf("%lf", &deal->capex);
+			break;
+		case 10:
+			scanf("%lf", &deal->repairs);
+			break;
+		case 11:
+			scanf("%lf", &deal->vacancy);
+			break;
+		case 12:
+			scanf("%lf", &deal->management);
+			break;
+		case 13:
+			scanf("%lf", &deal->monthly_rent);
+			break;
+		default:
+			printf("Unrecognized value. Exiting.\n");
+			return;
+		}
+
+		printf("\n");
+		calculate_deal(deal);
+	}
+}
+
 void calculate_deal(DEAL *deal) {
 	double noi;
 	double cap_rate;
 	double cash_flow;
 	double coc;
 	double roi;
+	double irr;
 
 	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
 	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
@@ -57,42 +118,42 @@ void calculate_deal(DEAL *deal) {
 		deal->management + deal->repairs + deal->taxes +
 		deal->insurance + deal->hoa)) * 12.0;
 
-	cap_rate = noi / (deal->rehab_cost + deal->down_payment);
+	cap_rate = (noi / (deal->rehab_cost + deal->down_payment)) * 100;
 
 	cash_flow = noi - (deal->mortgage * 12);
 
-	coc = cash_flow / (deal->rehab_cost + deal->down_payment);
+	coc = (cash_flow / (deal->rehab_cost + deal->down_payment)) * 100;
 
-	double year_one_amortization = calc_year_one_amortization(
-		deal->purchase_price - deal->down_payment);
+	double year_one_amortization = calc_annual_amortization(
+		deal->purchase_price - deal->down_payment, 0);
 
-	printf("%lf\n", year_one_amortization);
-
-	roi = (cash_flow + year_one_amortization + (deal->market_price *
-		YEARLY_PROP_APP) + (deal->market_price -
+	roi = ((cash_flow + year_one_amortization + (deal->market_price -
 		deal->purchase_price)) / (deal->rehab_cost +
-		deal->down_payment);
+		deal->down_payment)) * 100;
+
+	irr = calculate_30_year(deal) * 100;
 
 	char *sidebar[] = {
-	"Asking Price",
-	"Market Price",
-	"Purchase Price",
-	"Down Payment",
-	"Rehab Cost",
+	"1. Asking Price",
+	"2. Market Price",
+	"3. Purchase Price",
+	"4. Down Payment",
+	"5. Rehab Cost",
+	"6. Taxes (Monthly)",
+	"7. Insurance (Monthly)",
+	"8. HOA (Monthly)",
+	"9. CapEX (Monthly)",
+	"10. Repairs (Monthly)",
+	"11. Vacancy (Monthly)",
+	"12. Management (Monthly)",
+	"13. Rent (Monthly)",
 	"Mortgage (Monthly)",
-	"Taxes (Monthly)",
-	"Insurance (Monthly)",
-	"HOA Monthly)",
-	"CapEX (Monthly)",
-	"Repairs (Monthly)",
-	"Vacancy (Monthly)",
-	"Management (Monthly)",
-	"Rent (Monthly)",
-	"NOI (Yearly)",
+	"NOI (Monthly)",
+	"Cash Flow (Monthly)",
 	"Cap Rate",
-	"Cash Flow (Yearly)",
 	"Cash on Cash Return",
-	"Expected ROI"};
+	"Expected ROI",
+	"IRR"};
 
 	char *data[] = {
 		ftoa(deal->asking_price, (char[50]){}, 50),
@@ -100,7 +161,6 @@ void calculate_deal(DEAL *deal) {
 		ftoa(deal->purchase_price, (char[50]){}, 50),
 		ftoa(deal->down_payment, (char[50]){}, 50),
 		ftoa(deal->rehab_cost, (char[50]){}, 50),
-		ftoa(deal->mortgage, (char[50]){}, 50),
 		ftoa(deal->taxes, (char[50]){}, 50),
 		ftoa(deal->insurance, (char[50]){}, 50),
 		ftoa(deal->hoa, (char[50]){}, 50),
@@ -109,12 +169,235 @@ void calculate_deal(DEAL *deal) {
 		ftoa(deal->vacancy, (char[50]){}, 50),
 		ftoa(deal->management, (char[50]){}, 50),
 		ftoa(deal->monthly_rent, (char[50]){}, 50),
-		ftoa(noi, (char[50]){}, 50),
-		ftoa(cap_rate, (char[50]){}, 50),
-		ftoa(cash_flow, (char[50]){}, 50),
-		ftoa(coc, (char[50]){}, 50),
-		ftoa(roi, (char[50]){}, 50),
+		ftoa(deal->mortgage, (char[50]){}, 50),
+		ftoa(noi / 12.0, (char[50]){}, 50),
+		ftoa(cash_flow / 12.0, (char[50]){}, 50),
+		ftoa_p(cap_rate, (char[50]){}, 50),
+		ftoa_p(coc, (char[50]){}, 50),
+		ftoa_p(roi, (char[50]){}, 50),
+		ftoa_p(irr, (char[50]){}, 50),
 	};
 
-	print_chart_single("Deal Info", sidebar, data, 19, 25);
+	print_chart_single("Deal Info", sidebar, data, 20, 25);
+}
+
+double calculate_30_year(DEAL *deal) {
+	char **data[] = {
+		(char*[17]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}},
+		(char*[17]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}},
+		(char*[17]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}},
+		(char*[17]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}},
+		(char*[17]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}}};
+
+	double balance = deal->purchase_price - deal->down_payment;
+	double amortization;
+	double taxes;
+	double insurance;
+	double hoa;
+	double capex;
+	double repairs;
+	double vacancy;
+	double management;
+	double monthly_rent;
+	double market_price;
+	double noi;
+	double cash_flow;
+	double coc;
+	double cap_rate;
+	double roi;
+
+	double cf[30], irr = 0.00;
+
+	cf[0] = -(deal->rehab_cost + deal->down_payment);
+
+	for (int i = 0; i < 5; i++) {
+		amortization = calc_annual_amortization(balance, i * 12);
+		balance -= amortization;
+
+		taxes = compund_interest(deal->taxes, YEARLY_FEE_INCREASE, i);
+		insurance = compund_interest(deal->insurance,
+			YEARLY_FEE_INCREASE, i);
+
+		hoa = compund_interest(deal->hoa, YEARLY_FEE_INCREASE, i);
+		capex = compund_interest(deal->capex, YEARLY_FEE_INCREASE, i);
+		repairs = compund_interest(deal->repairs, YEARLY_FEE_INCREASE,
+			i);
+
+		vacancy = compund_interest(deal->vacancy, YEARLY_FEE_INCREASE,
+			i);
+
+		management = compund_interest(deal->management,
+			YEARLY_FEE_INCREASE, i);
+
+		monthly_rent = compund_interest(deal->monthly_rent,
+			YEARLY_INCREASE_RENT, i);
+
+		market_price = compund_interest(deal->market_price,
+			YEARLY_PROP_APP, i);
+
+		noi = (monthly_rent - (capex + vacancy + management + repairs +
+			taxes + insurance + hoa)) * 12.0;
+
+		cap_rate = (noi / (deal->rehab_cost + deal->down_payment)) *
+			100;
+
+		cash_flow = noi - (deal->mortgage * 12);
+
+		coc = (cash_flow / (deal->rehab_cost + deal->down_payment)) *
+			100;
+
+		roi = cash_flow + amortization;
+
+		if (i > 0) {
+			roi += market_price - compund_interest(
+				deal->market_price, YEARLY_PROP_APP, i - 1);
+		} else {
+			roi += market_price - deal->purchase_price;
+		}
+
+		cf[i + 1] = roi;
+
+		roi /= deal->rehab_cost + deal->down_payment;
+		roi *= 100;
+
+		ftoa(deal->mortgage, data[i][0], 50);
+		ftoa(taxes, data[i][1], 50);
+		ftoa(insurance, data[i][2], 50);
+		ftoa(hoa, data[i][3], 50);
+		ftoa(capex,data[i][4], 50);
+		ftoa(repairs, data[i][5], 50);
+		ftoa(vacancy, data[i][6], 50);
+		ftoa(management, data[i][7], 50);
+		ftoa(monthly_rent, data[i][8], 50);
+		ftoa(market_price, data[i][9], 50);
+		ftoa(balance, data[i][10], 50);
+		ftoa(amortization, data[i][11], 50);
+		ftoa(noi / 12.0, data[i][12], 50);
+		ftoa(cash_flow / 12.0, data[i][13], 50);
+		ftoa_p(cap_rate, data[i][14], 50);
+		ftoa_p(coc, data[i][15], 50);
+		ftoa_p(roi, data[i][16], 50);
+	}
+
+
+	int numOfFlows;
+	numOfFlows = 6;
+	irr = computeIRR(cf, numOfFlows);
+	//printf("Final IRR: %.2f\n", irr);
+
+	char *header[] = {
+	"Year 1",
+	"Year 2",
+	"Year 3",
+	"Year 4",
+	"Year 5"};
+
+	char *sidebar[] = {
+	"Mortgage (Monthly)",
+	"Taxes (Monthly)",
+	"Insurance (Monthly)",
+	"HOA (Monthly)",
+	"CapEX (Monthly)",
+	"Repairs (Monthly)",
+	"Vacancy (Monthly)",
+	"Management (Monthly)",
+	"Rent (Monthly)",
+	"Market Value",
+	"Loan Balance",
+	"Amortization",
+	"NOI (Monthly)",
+	"Cash Flow (Monthly)",
+	"Cap Rate",
+	"Cash on Cash Return",
+	"Expected ROI"};
+
+	print_chart(header, sidebar, data, 5, 17, 21);
+	printf("\n");
+
+	return irr;
 }

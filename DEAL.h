@@ -25,5 +25,7 @@ typedef struct {
 
 void init_deal(DEAL *deal);
 void calculate_deal(DEAL *deal);
+void modify_values(DEAL *deal);
+double calculate_30_year(DEAL *deal);
 
 #endif
