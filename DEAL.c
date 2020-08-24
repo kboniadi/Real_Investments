@@ -25,8 +25,6 @@ void init_deal(DEAL *deal) {
 	deal->vacancy = MONTHLY_VACANCY * deal->monthly_rent;
 	deal->management = MONTHLY_MANAGEMENT * deal->monthly_rent;
 	deal->repairs = MONTHLY_REPAIRS * deal->monthly_rent;
-	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
-	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
 
 	deal->mortgage = deal->monthly_rent - (deal->capex + deal->vacancy +
 		deal->management + deal->repairs + deal->taxes +
@@ -35,24 +33,45 @@ void init_deal(DEAL *deal) {
 	max_debt = principle(deal->mortgage, rate(INTEREST, COMPOUND_RATE,
 		PAY_RATE), LOAN_LENGTH);
 
-	deal->purchase_price = max_debt / .8;
+	deal->purchase_price = max_debt / .80;
 
 	deal->down_payment = DEFAULT_DOWN_PAYMENT * deal->purchase_price;
 
-	deal->rehab_cost = ((deal->market_price - max_debt) -
-		deal->down_payment) / 2.0;
+	deal->rehab_cost = (deal->market_price - deal->purchase_price) / 2.0;
 }
 
 void calculate_deal(DEAL *deal) {
+	double noi;
+	double cap_rate;
+	double cash_flow;
+	double coc;
+	double roi;
 
-	/*
-	caprate
-	noi
-	Cashflow
-	cash on cas
-	*/
+	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
+	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
 
-	//cashflow, coc return, projected roi
+	deal->mortgage = payment(deal->purchase_price - deal->down_payment,
+		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
+
+	noi = (deal->monthly_rent - (deal->capex + deal->vacancy +
+		deal->management + deal->repairs + deal->taxes +
+		deal->insurance + deal->hoa)) * 12.0;
+
+	cap_rate = noi / (deal->rehab_cost + deal->down_payment);
+
+	cash_flow = noi - (deal->mortgage * 12);
+
+	coc = cash_flow / (deal->rehab_cost + deal->down_payment);
+
+	double year_one_amortization = calc_year_one_amortization(
+		deal->purchase_price - deal->down_payment);
+
+	printf("%lf\n", year_one_amortization);
+
+	roi = (cash_flow + year_one_amortization + (deal->market_price *
+		YEARLY_PROP_APP) + (deal->market_price -
+		deal->purchase_price)) / (deal->rehab_cost +
+		deal->down_payment);
 
 	char *sidebar[] = {
 	"Asking Price",
@@ -69,8 +88,11 @@ void calculate_deal(DEAL *deal) {
 	"Vacancy (Monthly)",
 	"Management (Monthly)",
 	"Rent (Monthly)",
-	"Cashflow (Monthly)",
-	"Cash on Cash Return"};
+	"NOI (Yearly)",
+	"Cap Rate",
+	"Cash Flow (Yearly)",
+	"Cash on Cash Return",
+	"Expected ROI"};
 
 	char *data[] = {
 		ftoa(deal->asking_price, (char[50]){}, 50),
@@ -87,9 +109,12 @@ void calculate_deal(DEAL *deal) {
 		ftoa(deal->vacancy, (char[50]){}, 50),
 		ftoa(deal->management, (char[50]){}, 50),
 		ftoa(deal->monthly_rent, (char[50]){}, 50),
-		ftoa(deal->hoa, (char[50]){}, 50),
-		ftoa(deal->hoa, (char[50]){}, 50),
+		ftoa(noi, (char[50]){}, 50),
+		ftoa(cap_rate, (char[50]){}, 50),
+		ftoa(cash_flow, (char[50]){}, 50),
+		ftoa(coc, (char[50]){}, 50),
+		ftoa(roi, (char[50]){}, 50),
 	};
 
-	print_chart_single("Deal Info", sidebar, data, 16, 25);
+	print_chart_single("Deal Info", sidebar, data, 19, 25);
 }

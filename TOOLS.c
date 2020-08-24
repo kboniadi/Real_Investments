@@ -79,19 +79,21 @@ void print(double home,  double down)
 	}
 }
 
-int calc_year_one_amortization(double home,  double down)
+int calc_year_one_amortization(double balance)
 {
 	int i = 1;
 	double amount_count = 0;
 	double principal_count = 0;
 	double interest_count = 0;
-	double balance = home - down;
 	double amount = payment(balance,
 		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
 
 	for (int i = 0; i < 12; i++) {
 		principal_count += amount - (balance * rate(INTEREST,
 			COMPOUND_RATE, PAY_RATE));
+
+		balance -= (amount - (balance * rate(INTEREST, COMPOUND_RATE,
+			PAY_RATE)));
 	}
 	return principal_count;
 }
