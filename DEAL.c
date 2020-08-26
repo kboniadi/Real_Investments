@@ -35,9 +35,18 @@ void init_deal(DEAL *deal) {
 	max_debt = principle(deal->mortgage, rate(INTEREST, COMPOUND_RATE,
 		PAY_RATE), LOAN_LENGTH);
 
+		/*
 	deal->purchase_price = max_debt / .80;
 
 	deal->down_payment = DEFAULT_DOWN_PAYMENT * deal->purchase_price;
+
+	interest rate
+	*/
+	deal->purchase_price = deal->market_price * 0.90;
+
+	deal->down_payment = DEFAULT_DOWN_PAYMENT * deal->purchase_price;
+
+	//deal->down_payment = deal->purchase_price - max_debt;
 
 	deal->rehab_cost = (deal->market_price - deal->purchase_price) / 2.0;
 }
@@ -183,25 +192,8 @@ void calculate_deal(DEAL *deal) {
 
 double calculate_30_year(DEAL *deal) {
 	char **data[] = {
-		(char*[17]){
+		(char*[18]){
 			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}},
-		(char*[17]){
 			(char[50]){},
 			(char[50]){},
 			(char[50]){},
@@ -219,25 +211,8 @@ double calculate_30_year(DEAL *deal) {
 			(char[50]){},
 			(char[50]){},
 			(char[50]){}},
-		(char*[17]){
+		(char*[18]){
 			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}},
-		(char*[17]){
 			(char[50]){},
 			(char[50]){},
 			(char[50]){},
@@ -255,7 +230,46 @@ double calculate_30_year(DEAL *deal) {
 			(char[50]){},
 			(char[50]){},
 			(char[50]){}},
-		(char*[17]){
+		(char*[18]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}},
+		(char*[18]){
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){},
+			(char[50]){}},
+		(char*[18]){
+			(char[50]){},
 			(char[50]){},
 			(char[50]){},
 			(char[50]){},
@@ -290,6 +304,15 @@ double calculate_30_year(DEAL *deal) {
 	double coc;
 	double cap_rate;
 	double roi;
+	double cashout_refi;
+	double orig_cash_flow;
+	double max_debt;
+
+	noi = (deal->monthly_rent - (deal->capex + deal->vacancy +
+		deal->management + deal->repairs + deal->taxes +
+		deal->insurance + deal->hoa)) * 12.0;
+
+	orig_cash_flow = noi - (deal->mortgage * 12);
 
 	double cf[30], irr = 0.00;
 
@@ -345,6 +368,11 @@ double calculate_30_year(DEAL *deal) {
 		roi /= deal->rehab_cost + deal->down_payment;
 		roi *= 100;
 
+		max_debt = principle((noi - orig_cash_flow) / 12.0,
+			rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
+
+		cashout_refi = max_debt - balance;
+
 		ftoa(deal->mortgage, data[i][0], 50);
 		ftoa(taxes, data[i][1], 50);
 		ftoa(insurance, data[i][2], 50);
@@ -357,18 +385,18 @@ double calculate_30_year(DEAL *deal) {
 		ftoa(market_price, data[i][9], 50);
 		ftoa(balance, data[i][10], 50);
 		ftoa(amortization, data[i][11], 50);
-		ftoa(noi / 12.0, data[i][12], 50);
-		ftoa(cash_flow / 12.0, data[i][13], 50);
-		ftoa_p(cap_rate, data[i][14], 50);
-		ftoa_p(coc, data[i][15], 50);
-		ftoa_p(roi, data[i][16], 50);
+		ftoa(cashout_refi, data[i][12], 50);
+		ftoa(noi / 12.0, data[i][13], 50);
+		ftoa(cash_flow / 12.0, data[i][14], 50);
+		ftoa_p(cap_rate, data[i][15], 50);
+		ftoa_p(coc, data[i][16], 50);
+		ftoa_p(roi, data[i][17], 50);
 	}
 
 
 	int numOfFlows;
 	numOfFlows = 6;
 	irr = computeIRR(cf, numOfFlows);
-	//printf("Final IRR: %.2f\n", irr);
 
 	char *header[] = {
 	"Year 1",
@@ -390,13 +418,14 @@ double calculate_30_year(DEAL *deal) {
 	"Market Value",
 	"Loan Balance",
 	"Amortization",
+	"Cash Out Refi",
 	"NOI (Monthly)",
 	"Cash Flow (Monthly)",
 	"Cap Rate",
 	"Cash on Cash Return",
 	"Expected ROI"};
 
-	print_chart(header, sidebar, data, 5, 17, 21);
+	print_chart(header, sidebar, data, 5, 18, 21);
 	printf("\n");
 
 	return irr;
