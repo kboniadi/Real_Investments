@@ -9,6 +9,7 @@ we have to eventually calculate holding costs...
 we should also calculate IRR
 it's Principal not principle
 how much can I refi?
+add cash out refi
 */
 
 int main()

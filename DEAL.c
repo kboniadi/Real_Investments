@@ -127,7 +127,7 @@ void calculate_deal(DEAL *deal) {
 		deal->management + deal->repairs + deal->taxes +
 		deal->insurance + deal->hoa)) * 12.0;
 
-	cap_rate = (noi / (deal->rehab_cost + deal->down_payment)) * 100;
+	cap_rate = (noi / deal->purchase_price) * 100;
 
 	cash_flow = noi - (deal->mortgage * 12);
 
@@ -346,8 +346,7 @@ double calculate_30_year(DEAL *deal) {
 		noi = (monthly_rent - (capex + vacancy + management + repairs +
 			taxes + insurance + hoa)) * 12.0;
 
-		cap_rate = (noi / (deal->rehab_cost + deal->down_payment)) *
-			100;
+		cap_rate = (noi / deal->purchase_price) * 100;
 
 		cash_flow = noi - (deal->mortgage * 12);
 
