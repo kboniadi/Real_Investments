@@ -27,6 +27,7 @@ void init_deal(DEAL *deal) {
 	deal->repairs = MONTHLY_REPAIRS * deal->monthly_rent;
 	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
 	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
+	deal->cash_out = 0;
 
 	deal->mortgage = deal->monthly_rent - (deal->capex + deal->vacancy +
 		deal->management + deal->repairs + deal->taxes +
@@ -99,6 +100,9 @@ void modify_values(DEAL *deal) {
 		case 13:
 			scanf("%lf", &deal->monthly_rent);
 			break;
+		case 14:
+			scanf("%lf", &deal->cash_out);
+			break;
 		default:
 			printf("Unrecognized value. Exiting.\n");
 			return;
@@ -120,8 +124,9 @@ void calculate_deal(DEAL *deal) {
 	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
 	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
 
-	deal->mortgage = payment(deal->purchase_price - deal->down_payment,
-		rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
+	deal->mortgage = payment(deal->purchase_price - deal->down_payment +
+		deal->cash_out, rate(INTEREST, COMPOUND_RATE, PAY_RATE),
+		LOAN_LENGTH);
 
 	noi = (deal->monthly_rent - (deal->capex + deal->vacancy +
 		deal->management + deal->repairs + deal->taxes +
@@ -134,10 +139,10 @@ void calculate_deal(DEAL *deal) {
 	coc = (cash_flow / (deal->rehab_cost + deal->down_payment)) * 100;
 
 	double year_one_amortization = calc_annual_amortization(
-		deal->purchase_price - deal->down_payment, 0);
+		deal->purchase_price - deal->down_payment + deal->cash_out, 0);
 
 	roi = ((cash_flow + year_one_amortization + (deal->market_price -
-		deal->purchase_price)) / (deal->rehab_cost +
+		deal->purchase_price) + deal->cash_out) / (deal->rehab_cost +
 		deal->down_payment)) * 100;
 
 	irr = calculate_30_year(deal) * 100;
@@ -156,6 +161,7 @@ void calculate_deal(DEAL *deal) {
 	"11. Vacancy (Monthly)",
 	"12. Management (Monthly)",
 	"13. Rent (Monthly)",
+	"14. Cash Out",
 	"Mortgage (Monthly)",
 	"NOI (Monthly)",
 	"Cash Flow (Monthly)",
@@ -178,6 +184,7 @@ void calculate_deal(DEAL *deal) {
 		ftoa(deal->vacancy, (char[50]){}, 50),
 		ftoa(deal->management, (char[50]){}, 50),
 		ftoa(deal->monthly_rent, (char[50]){}, 50),
+		ftoa(deal->cash_out, (char[50]){}, 50),
 		ftoa(deal->mortgage, (char[50]){}, 50),
 		ftoa(noi / 12.0, (char[50]){}, 50),
 		ftoa(cash_flow / 12.0, (char[50]){}, 50),
@@ -187,7 +194,7 @@ void calculate_deal(DEAL *deal) {
 		ftoa_p(irr, (char[50]){}, 50),
 	};
 
-	print_chart_single("Deal Info", sidebar, data, 20, 25);
+	print_chart_single("Deal Info", sidebar, data, 21, 25);
 }
 
 double calculate_30_year(DEAL *deal) {
@@ -288,7 +295,8 @@ double calculate_30_year(DEAL *deal) {
 			(char[50]){},
 			(char[50]){}}};
 
-	double balance = deal->purchase_price - deal->down_payment;
+	double balance = deal->purchase_price - deal->down_payment +
+		deal->cash_out;
 	double amortization;
 	double taxes;
 	double insurance;
@@ -359,7 +367,8 @@ double calculate_30_year(DEAL *deal) {
 			roi += market_price - compund_interest(
 				deal->market_price, YEARLY_PROP_APP, i - 1);
 		} else {
-			roi += market_price - deal->purchase_price;
+			roi += market_price - deal->purchase_price +
+			deal->cash_out;
 		}
 
 		cf[i + 1] = roi;

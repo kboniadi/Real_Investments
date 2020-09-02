@@ -10,6 +10,7 @@ typedef struct {
 	double market_price;
 	double hoa;
 	double monthly_rent;
+	double cash_out;
 
 	double purchase_price;
 	double down_payment;
