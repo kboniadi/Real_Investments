@@ -205,7 +205,7 @@ void calculate_deal(DEAL *deal) {
 
 double calculate_30_year(DEAL *deal) {
 
-	int years = 5;
+	int years = 10;
 
 	char ***data = (char***) malloc(years * sizeof(char**));
 
@@ -331,7 +331,6 @@ double calculate_30_year(DEAL *deal) {
 		strcat(header[i], itoa(i + 1, (char[50]){}, 50));
 	}
 
-
 	char *sidebar[] = {
 	"Mortgage (Monthly)",
 	"Taxes (Monthly)",
@@ -352,8 +351,10 @@ double calculate_30_year(DEAL *deal) {
 	"Cash on Cash Return",
 	"Expected ROI"};
 
-	print_chart(header, sidebar, data, years, 18, 21);
-	printf("\n");
+	for (int i = 0; i < years; i += 5) {
+		print_chart(header + i, sidebar, data + i, 5, 18, 21);
+		printf("\n");
+	}
 
 	for (int i = 0; i < years; i++) {
 		free(header[i]);
