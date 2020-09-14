@@ -204,102 +204,17 @@ void calculate_deal(DEAL *deal) {
 }
 
 double calculate_30_year(DEAL *deal) {
-	char **data[] = {
-		(char*[18]){
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}},
-		(char*[18]){
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}},
-		(char*[18]){
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}},
-		(char*[18]){
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}},
-		(char*[18]){
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){},
-			(char[50]){}}};
+
+	int years = 5;
+
+	char ***data = (char***) malloc(years * sizeof(char**));
+
+	for (int i = 0; i < years; i++) {
+		data[i] = (char**) malloc(18 * sizeof(char*));
+		for (int k = 0; k < 18; k++) {
+			data[i][k] = (char*) malloc(50 * sizeof(char));
+		}
+	}
 
 	double balance = deal->purchase_price - deal->down_payment +
 		deal->cash_out;
@@ -328,11 +243,11 @@ double calculate_30_year(DEAL *deal) {
 
 	orig_cash_flow = noi - (deal->mortgage * 12);
 
-	double cf[30], irr = 0.00;
+	double cf[years + 1], irr = 0.00;
 
 	cf[0] = -(deal->rehab_cost + deal->down_payment);
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < years; i++) {
 		amortization = calc_annual_amortization(balance, i * 12);
 		balance -= amortization;
 
@@ -403,17 +318,19 @@ double calculate_30_year(DEAL *deal) {
 		ftoa_p(roi, data[i][17], 50);
 	}
 
-
 	int numOfFlows;
-	numOfFlows = 6;
+	numOfFlows = years + 1;
 	irr = computeIRR(cf, numOfFlows);
 
-	char *header[] = {
-	"Year 1",
-	"Year 2",
-	"Year 3",
-	"Year 4",
-	"Year 5"};
+	char **header = (char**) malloc(years * sizeof(char*));
+
+	for (int i = 0; i < years; i++) {
+		header[i] = (char*) malloc(50 * sizeof(char));
+		strcpy(header[i], "");
+		strcat(header[i], "Year ");
+		strcat(header[i], itoa(i + 1, (char[50]){}, 50));
+	}
+
 
 	char *sidebar[] = {
 	"Mortgage (Monthly)",
@@ -435,8 +352,21 @@ double calculate_30_year(DEAL *deal) {
 	"Cash on Cash Return",
 	"Expected ROI"};
 
-	print_chart(header, sidebar, data, 5, 18, 21);
+	print_chart(header, sidebar, data, years, 18, 21);
 	printf("\n");
+
+	for (int i = 0; i < years; i++) {
+		free(header[i]);
+	}
+	free(header);
+
+	for (int i = 0; i < years; i++) {
+		for (int k = 0; k < 18; k++) {
+			free(data[i][k]);
+		}
+		free(data[i]);
+	}
+	free(data);
 
 	return irr;
 }
