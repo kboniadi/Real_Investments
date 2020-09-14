@@ -17,5 +17,6 @@
 #define YEARLY_INCREASE_RENT .03
 #define YEARLY_PROP_APP .03
 #define YEARLY_FEE_INCREASE .03
+#define MAX_CASH_OUT .8
 
 #endif

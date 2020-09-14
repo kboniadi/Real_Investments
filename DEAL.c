@@ -120,6 +120,7 @@ void calculate_deal(DEAL *deal) {
 	double coc;
 	double roi;
 	double irr;
+	double max_cash_out;
 
 	deal->taxes = (deal->market_price * YEARLY_PROP_TAXES) / 12.0;
 	deal->insurance = (deal->market_price * YEARLY_HOME_INSURANCE) / 12.0;
@@ -141,11 +142,14 @@ void calculate_deal(DEAL *deal) {
 	double year_one_amortization = calc_annual_amortization(
 		deal->purchase_price - deal->down_payment + deal->cash_out, 0);
 
-	roi = ((cash_flow + year_one_amortization + (deal->market_price -
-		deal->purchase_price) + deal->cash_out) / (deal->rehab_cost +
-		deal->down_payment)) * 100;
+	roi = ((cash_flow + year_one_amortization + deal->cash_out) /
+		(deal->rehab_cost + deal->down_payment)) * 100;
 
 	irr = calculate_30_year(deal) * 100;
+
+	max_cash_out = ((deal->market_price - deal->purchase_price +
+		deal->down_payment) - (deal->market_price *
+		DEFAULT_DOWN_PAYMENT)) * MAX_CASH_OUT;
 
 	char *sidebar[] = {
 	"1. Asking Price",
@@ -162,6 +166,7 @@ void calculate_deal(DEAL *deal) {
 	"12. Management (Monthly)",
 	"13. Rent (Monthly)",
 	"14. Cash Out",
+	"Max Cash Out",
 	"Mortgage (Monthly)",
 	"NOI (Monthly)",
 	"Cash Flow (Monthly)",
@@ -185,6 +190,7 @@ void calculate_deal(DEAL *deal) {
 		ftoa(deal->management, (char[50]){}, 50),
 		ftoa(deal->monthly_rent, (char[50]){}, 50),
 		ftoa(deal->cash_out, (char[50]){}, 50),
+		ftoa(max_cash_out, (char[50]){}, 50),
 		ftoa(deal->mortgage, (char[50]){}, 50),
 		ftoa(noi / 12.0, (char[50]){}, 50),
 		ftoa(cash_flow / 12.0, (char[50]){}, 50),
@@ -194,7 +200,7 @@ void calculate_deal(DEAL *deal) {
 		ftoa_p(irr, (char[50]){}, 50),
 	};
 
-	print_chart_single("Deal Info", sidebar, data, 21, 25);
+	print_chart_single("Deal Info", sidebar, data, 22, 25);
 }
 
 double calculate_30_year(DEAL *deal) {
@@ -363,12 +369,8 @@ double calculate_30_year(DEAL *deal) {
 
 		roi = cash_flow + amortization;
 
-		if (i > 0) {
-			roi += market_price - compund_interest(
-				deal->market_price, YEARLY_PROP_APP, i - 1);
-		} else {
-			roi += market_price - deal->purchase_price +
-			deal->cash_out;
+		if (i <= 0) {
+			roi += deal->cash_out;
 		}
 
 		cf[i + 1] = roi;
