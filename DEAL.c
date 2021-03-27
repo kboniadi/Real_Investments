@@ -147,9 +147,11 @@ void calculate_deal(DEAL *deal) {
 
 	irr = calculate_30_year(deal) * 100;
 
-	max_cash_out = ((deal->market_price - deal->purchase_price +
-		deal->down_payment) - (deal->market_price *
-		DEFAULT_DOWN_PAYMENT)) * MAX_CASH_OUT;
+	max_cash_out = (deal->market_price * 0.75) - (deal->purchase_price - deal->down_payment + deal->cash_out);
+
+	//max_cash_out = ((deal->market_price - deal->purchase_price +
+	//	deal->down_payment) - (deal->market_price *
+	//	DEFAULT_DOWN_PAYMENT)) * MAX_CASH_OUT;
 
 	char *sidebar[] = {
 	"1. Asking Price",
@@ -296,7 +298,7 @@ double calculate_30_year(DEAL *deal) {
 		max_debt = principle((noi - orig_cash_flow) / 12.0,
 			rate(INTEREST, COMPOUND_RATE, PAY_RATE), LOAN_LENGTH);
 
-		cashout_refi = max_debt - balance;
+		cashout_refi = ((market_price * 0.75) < max_debt ? (market_price * 0.75) : max_debt) - balance;
 
 		ftoa(deal->mortgage, data[i][0], 50);
 		ftoa(taxes, data[i][1], 50);
